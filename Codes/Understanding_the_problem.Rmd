@@ -1,0 +1,125 @@
+---
+title: "Understanding the problem"
+author: "the-eon-flux"
+date: "13/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Natural Language Processing
+
+* __Natural language processing__ (NLP) is a subfield of linguistics, computer science, and artificial intelligence concerned with the interactions between computers and human language, in particular how to program computers to process and analyze large amounts of natural language data. src : [Wikipedia](https://en.wikipedia.org/wiki/Natural_language_processing)
+
+* The result is a computer capable of ‘understanding’ the contents of documents, including the contextual nuances of the language within them. The technology can then accurately extract information and insights contained in the documents as well as categorize and organize the documents themselves.
+
+### Common NLP applications and subtasks : 
+
+1. __Text and speech processing :__  
+                * __Optical character recognition (OCR)__ : Given an image representing printed text, determine the corresponding text.  
+                * __Speech recognition__ : Given a sound clip of a person or people speaking, determine the textual representation of the speech.  
+                * __Speech segmentation__: Given a sound clip of a person or people speaking, separate it into words. A subtask of speech recognition and typically grouped with it.  
+                * __Text-to-speech__ : Given a text, transform those units and produce a spoken representation. Text-to-speech can be used to aid the visually impaired.  
+                * __Word segmentation (Tokenization)__ : Separate a chunk of continuous text into separate words.
+
+2. __Morphological analysis :__
+        * __Lemmatization :__ The task of removing inflectional endings only and to return the base dictionary form of a word which is also known as a lemma.  
+        * __Morphological segmentation : __ Separate words into individual morphemes and identify the class of the morphemes.  
+        * __Part-of-speech tagging :__ Given a sentence, determine the part of speech (POS) for each word.  
+        * __Stemming :__ The process of reducing inflected (or sometimes derived) words to their root form. (e.g., "close" will be the root for "closed", "closing", "close", "closer" etc.).
+
+etc..
+
+
+
+### Approach to solution : 
+Figure out 2 things  here  
+        1. What type of data do you have ?  
+        2. What are the standard tools and models used for that type of data ?
+
+### Basic todo's in NLP
+
+* Text normalization :  
+        1. Segmenting/tokenizing words in running text  
+        2. Normalizing word formats  
+        3. Segmenting sentences in running text  
+
+Eg 1. : "I do uh main- mainly business data processing"  
+        * How many actual words are there ? We have to decide if fragments (__"main"__) & filled pause words (__"uh"__) need to be included.  
+
+Eg 2. : "Sue's cat in the hat is different from other cats!"  
+        * __Lemmas__ : Words with same stem,part  of speech, rough word sense (__cat & cats__ = same _lemma_)  
+        * __Wordform__ : __cat & cats__ have 2 different meanings.  
+        
+Eg 3. : "they lay back on the New York grass and looked at the stars and their"
+        * Make 2 distinctions :  
+                1. Type "V" : unique elements of vocab (or 13 types or 12)
+                2. Tokens "N" : an instance of the above types. 15 tokens (or 14)
+
+       
+### Getting and cleaning data
+
+
+```{r LoadData,cache=TRUE}
+set.seed(123)
+
+# Loading data
+File <- file("../Resources/final/en_US/en_US.news.txt", "r")
+Text <- readLines(File, warn=FALSE) # since most files are missing an EOL marker like a new line below, so warn=FALSE.
+close(File)
+
+```
+
+* First goal is to load data and do __Tokenization__ post cleaning.
+
+```{r Tokens, cache=TRUE}
+n <- length(Text)
+All_Words <- unlist(strsplit(Text, "[, .:]"))
+# Before removing blanks
+length(All_Words)
+
+BlankWord_Ids <- which(nchar(All_Words) == 0)
+All_Words <- All_Words[-BlankWord_Ids]
+# After removing blanks   
+
+All_Words <- tolower(All_Words[grepl("^[a-zA-Z]*$", All_Words)])
+length(All_Words) # Taking only the alphabetical words
+
+freq <- sort(table(All_Words), decreasing = TRUE )
+```
+
+* Normalization :  
+        * __Morphemes__ : Small meaningful units that make up words. Find the stems and affixes, decide what to do with them.  
+        * __Stems__ : The core meaning bearing units. Stemming refers to reducing the words to their stems. Most common algorithm is _Porter's_ algorithm.  
+        * __Affixes__ : Bits and pieces that adhere to the stem (Often with grammatical implications)
+        
+        
+```{r normalization, cache=TRUE}
+# we will first remove the affix 'ing'. According to the Porter's alg. We remove 'ing' suffix only if there is a vowel in the word/stem of that affix. Eg. Walking > alk & Sing > Sing (S isn't a vowel but 'a' in walking is a vowel )
+
+ing_Words <- grep(pattern = "ing$", All_Words)
+#
+```
+
+* Types
+
+```{r Types, cache=TRUE, eval=FALSE}
+
+Types <- unique(Types)
+print(paste("Unique Word Count : ", length(Types)))
+
+```
+
+* __Main objective is understanding the distribution of words and the relationship between the words in the corpora.__  
+* __Understand frequencies of words and word pairs.__  
+
+```{r ExploreData, cache=TRUE, eval=FALSE}
+Unique_Vocabulary <- c()
+
+# find frequencies of words 
+Text.subset <- sample(Text)
+
+```
+
